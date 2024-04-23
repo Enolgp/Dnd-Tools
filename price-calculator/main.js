@@ -86,7 +86,7 @@ function rarityBono(election){
         case 'Common':
             return 1;
         case 'Uncommon':
-            return 1,5;
+            return 1.5;
         case 'Rare':
             return 2;
         case 'Very Rare':
