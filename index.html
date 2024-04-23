@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Dani's price calculator</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  </head>
+  <body>
+    
+    <div class="container mt-5">
+        <div class="form">
+            <form>
+                <div class="form-group">
+                    <label for="rarity-rate">Rarity Rate</label>
+                    <select class="form-control" id="rarity">
+                        <option disabled selected hidden></option>
+                        <option>Common</option>
+                        <option>Uncommon</option>
+                        <option>Rare</option>
+                        <option>Very Rare</option>
+                        <option>Legendary</option>
+                    </select>
+                </div>
+                <div class="form-group spells">
+                    <label for="Spell Level">Spell Level</label>
+                    <div id="spells">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" id="spell-btn">Add spell</button>
+                <button type="button" class="btn btn-danger" id="clear-btn">Clear</button>
+                <div class="form-group">
+                    <label for="permanency-cost">Permanency cost</label>
+                    <select class="form-control permanency-data" id="permanency">
+                        <option disabled selected hidden></option>
+                        <option>Consumible</option>
+                        <option>Diary</option>
+                        <option>Charges</option>
+                        <option>Permanent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="input-group-text">
+                        <label for="attunement">Atunement</label><br>
+                        <input type="checkbox" name="" id="attunement" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="">Charisma Bonus</label>
+                    <input type="number" id="charisma" class="form-control" min="-2" max="5" value="0">
+                </div>
+            </form>
+            <button type="button" class="btn btn-primary" id="calculate">
+                Calculate
+            </button>
+            <div id="result-box">
+                <div id="result" class="h3"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <!-- Personal js -->
+    <script src="main.js"></script>
+  </body>
+</html>
