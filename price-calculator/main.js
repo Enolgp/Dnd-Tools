@@ -1,18 +1,23 @@
+//List of spells
 var list =['Cantrip']
 for(let i=1; i<10; i++){ 
     list.push(`Lvl ${i} spell`);
 }
 
+//funcionality of the 'add spell' button
 document.getElementById('spell-btn').addEventListener('click', function(){
     document.getElementById('spells').appendChild(createSpell())
 })
+//funcionality of the 'clear' button
 document.getElementById('clear-btn').addEventListener('click', function(){
     document.getElementById('spells').innerHTML=''
 })
+//funcionality of the spawn and vanish of an input if the permanency is charges
 document.getElementById('permanency').addEventListener('change', function(){
     let numericInput = document.getElementById('charges-input');
 
     if(this.value == 'Charges'){
+        //If the value of the select is 'charges' it spawns a numeric input
         if(!numericInput){
             numericInput = document.createElement('input');
             numericInput.setAttribute('type', 'number');
@@ -20,6 +25,8 @@ document.getElementById('permanency').addEventListener('change', function(){
             numericInput.setAttribute('class', 'form-control mt-2');
             document.getElementById('permanency').after(numericInput);
 
+            //if the value of that input is less than 2, the value of the select changes to 'diary'
+            //if the value of that input is more than 6, the value of the select changes to 'permanent'
             numericInput.addEventListener('input', function() {
                 const inputValue = parseInt(this.value);
                 if (inputValue < 2) {
@@ -27,20 +34,24 @@ document.getElementById('permanency').addEventListener('change', function(){
                     this.remove();
                 } else if (inputValue > 6) {
                     document.getElementById('permanency').value = 'Permanent';
-                    this.remove(); // Eliminar el input numérico
+                    this.remove();
                 }
             })
         }
     }else{
+        //If the value of the select is different from 'charges' it removes the numeric input if it's created
         if(numericInput){
             numericInput.remove();
         }
     }
 })
+//funcionallity of the 'calculate' button
 document.getElementById('calculate').addEventListener('click', function(){
     let res = document.getElementById('result-box')
+    //clear the result box when pressed
     res.innerHTML=''
     
+    //calculate the price and the bonos and show the numbers in the console
     rarityVal=rarityBono();
     console.log(`Rarity value : ${rarityVal}`)
     spellValue=spellLvl();
@@ -55,7 +66,8 @@ document.getElementById('calculate').addEventListener('click', function(){
     
     output(basePrice, attunementValue, charismaValue)
 })
-
+//create a select of the spells using the list.
+//Returns the html div
 function createSpell(){
     let spellDiv = document.createElement('div');
     spellDiv.classList.add('spell', 'form-group');
@@ -78,10 +90,9 @@ function createSpell(){
     document.getElementById('spells').appendChild(spellDiv)
     return(spellDiv)
 }
-
+//return the rarity modifier based on the election of the rarity select
 function rarityBono(election){
     election=document.getElementById('rarity').value;
-    // console.log("election: "+ election)
     switch(election){
         case 'Common':
             return 1;
@@ -95,7 +106,7 @@ function rarityBono(election){
             return 5;
     }
 }
-
+//return the sumatory of all the spells value
 function spellLvl(){
     spellList = document.querySelectorAll('#spells .spell-data');
     total=0;
@@ -107,7 +118,7 @@ function spellLvl(){
 
     return total;
 }
-
+//return the value associted to a spell wich is the summatory of all spell levels from cantrip (1) to the spell level (level+1)
 function getSpellValue(spell){
     switch(spell){
         case 'Cantrip':
@@ -132,7 +143,8 @@ function getSpellValue(spell){
             return sumatory(10);
     }
 }
-
+//gets a number n
+//return the sumatory from 1 to a number n
 function sumatory(n){
     var s = 0;
     for(let i=n; i>0; i--){
@@ -140,7 +152,7 @@ function sumatory(n){
     }
     return s;
 }
-
+//return the permanency cost based on the value of the permanency select
 function permanencyCost(){
     let election=document.getElementById('permanency').value;
     switch(election){
@@ -155,7 +167,8 @@ function permanencyCost(){
             return 10;
     }
 }
-
+//gets the base price of the item
+//return de positive or negativ bonus based on the state of the attunement checkbox that has to be added to the final price
 function attunementBonus(val){
     let state = document.getElementById('attunement').checked;
 
@@ -165,7 +178,8 @@ function attunementBonus(val){
         return 0;
     }
 }
-
+//gets the base price of the item
+//return de positive or negativ bonus based on the charisma modifier bonus that has to be added to the final price
 function chaBonus(val){
     let cha = document.getElementById('charisma').value;
 
@@ -176,7 +190,7 @@ function chaBonus(val){
         return 0
     }
 }
-
+//show the base price, different bonuses and total price on the re div
 function output(base, att, cha){
     let res = document.getElementById('result-box')
     let total=base+att+cha;
