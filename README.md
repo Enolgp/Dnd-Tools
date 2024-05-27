@@ -9,3 +9,6 @@ The output is the base price, the discount or tax of the attunement and charisma
 The formula was obtained from a [Reddit post](https://www.reddit.com/r/DnDBehindTheScreens/comments/uiwo1n/magic_items_pricing_guide_for_5e_a_spreadsheet)
 
 To use the app you can download the project or only the folder and execute the file "init.html" in the web browser or you can use it from this url: https://enolgp.github.io/Dnd-Tools/price-calculator/
+
+### Labyrinth generator (WIP)
+A tool that generates a random disposition of a dungeon in labyrinth shape whit an input of the room number
