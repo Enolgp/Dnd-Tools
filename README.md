@@ -10,5 +10,10 @@ The formula was obtained from a [Reddit post](https://www.reddit.com/r/DnDBehind
 
 To use the app you can download the project or only the folder and execute the file "init.html" in the web browser or you can use it from this url: https://enolgp.github.io/Dnd-Tools/price-calculator/
 
+### Table Bingo
+A Bingo panel that flips on click for the table to play BINGO with inside jokes
+
+To use the app you can download the project or only the folder and execute the file "init.html" in the web browser or you can use it from this url: https://enolgp.github.io/Dnd-Tools/bingo/
+
 ### Labyrinth generator (WIP)
 A tool that generates a random disposition of a dungeon in labyrinth shape whit an input of the room number

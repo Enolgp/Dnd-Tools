@@ -32,6 +32,7 @@ function applyFlipAndGray(cell) {
             }, 10); // Añadir un pequeño retardo para aplicar flip-backward después de cambiar el fondo
         }, 300); // Tiempo igual a la duración de la animación forward
     }
+    cell.classList.remove("cell");
 }
 
 // Create a new cell with 
