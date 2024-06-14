@@ -1,3 +1,28 @@
+// Get the data
+const apiUrl = 'https://my-json-server.typicode.com/enolgp/api/element';
+
+// Fetch the data
+async function fetchData() {
+    try {
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const file = await response.json();
+        console.log(file)
+
+        if (Array.isArray(file)) {
+            const dataArray = file.map(item => item.data);
+            return dataArray;
+        } else {
+            throw new Error('JSON response format is incorrect or missing "element" array');
+        }
+    } catch (error) {
+        console.error('Error fetching the data:', error);
+        return [];
+    }
+}
 
 // Function to shuffle array
 function shuffleArray(array) {
@@ -56,16 +81,23 @@ function createCell(id, content) {
 }
 
 // Stablish the Bingo sheet
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('cell-container');
-    maxLength = data.length
-    let shuffledData=shuffleArray(data.slice())
-    for (let i=0; i<=maxLength ;i++){
-        let cell = createCell(i,data[i])
-        if(i%2)
-            cell.classList.add('c1')
-        else
-            cell.classList.add('c2')
-        container.appendChild(cell)
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const container = document.getElementById('cell-container');
+        let data = await fetchData();
+        console.log(data)
+        let shuffledData = shuffleArray(data);
+
+        for (let i = 0; i < 9; i++) {
+            let cell = createCell(i, shuffledData[i]);
+            if (i % 2) {
+                cell.classList.add('c1');
+            } else {
+                cell.classList.add('c2');
+            }
+            container.appendChild(cell);
+        }
+    } catch (error) {
+        console.error('Error setting up Bingo sheet:', error);
     }
 });
