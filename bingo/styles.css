@@ -1,0 +1,29 @@
+.border{
+    border-width: 5px !important;
+    border-color: black !important;
+}
+
+.cell{
+    transition: transform 0.3s ease;
+}
+
+.cell:hover{
+    transform: scale(1.15);
+    z-index: 10;
+}
+
+.c1{
+    background-color: #63B8F5;
+}
+.c2{
+    background-color: #6C95F5;
+}
+
+.flip-forward{
+    transform: rotateY(180deg);
+    transition: transform 0.3s;
+}
+.flip-backward{
+    transform: rotateY(0deg);
+    transition: transform 0.3s;
+}
