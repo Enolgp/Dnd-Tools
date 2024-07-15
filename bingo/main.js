@@ -1,3 +1,5 @@
+var data = []
+
 // Get the data
 const apiUrl = 'https://my-json-server.typicode.com/enolgp/api/element';
 
@@ -14,13 +16,12 @@ async function fetchData() {
 
         if (Array.isArray(file)) {
             const dataArray = file.map(item => item.data);
-            return dataArray;
+            data =  dataArray;
         } else {
             throw new Error('JSON response format is incorrect or missing "element" array');
         }
     } catch (error) {
         console.error('Error fetching the data:', error);
-        return [];
     }
 }
 
@@ -34,12 +35,8 @@ function shuffleArray(array) {
 }
 
 // Change a color into the same but darker
-function rgbToGrayscale(r, g, b) {
-    r = Math.max(r - 120, 0);
-    g = Math.max(g - 120, 0);
-    b = Math.max(b - 120, 0);
-
-    return `rgb(${r}, ${g}, ${b})`;
+function rgbToGrayscale(r, g, b, scale=120) {
+    return `rgb(${r-scale}, ${g-scale}, ${b-scale})`;
 }
 
 // Flip the card and change color
@@ -80,15 +77,14 @@ function createCell(id, content) {
     return newCell;
 }
 
-// Stablish the Bingo sheet
-document.addEventListener('DOMContentLoaded', async () => {
+async function loadCells(n){
     try {
         const container = document.getElementById('cell-container');
         let data = await fetchData();
         console.log(data)
         let shuffledData = shuffleArray(data);
 
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < n; i++) {
             let cell = createCell(i, shuffledData[i]);
             if (i % 2) {
                 cell.classList.add('c1');
@@ -98,6 +94,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.appendChild(cell);
         }
     } catch (error) {
-        console.error('Error setting up Bingo sheet:', error);
+        console.error('Error loading cells:', error);
     }
+}
+
+// Stablish the Bingo sheet
+document.addEventListener('DOMContentLoaded', async () => {
+    const date = new Date();
+    date.setFullYear(2025);
+    date.setMonth(6); // Meses son 0-11, por lo que 6 es julio
+    date.setDate(3); // Día del mes
+
+    const expires = "expires=" + date.toUTCString();
+    document.cookie = "username=John Doe; " + expires + "; path=/; ";
+
+    console.log("cookies: " + document.cookie);
+    // loadCells(9)
 });
