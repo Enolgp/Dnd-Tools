@@ -1,6 +1,6 @@
 var data = []
 
-// Get the data
+// URL of the data
 const apiUrl = 'https://my-json-server.typicode.com/enolgp/api/element';
 
 // Fetch the data
@@ -12,11 +12,11 @@ async function fetchData() {
             throw new Error('Network response was not ok ' + response.statusText);
         }
         const file = await response.json();
-        console.log(file)
 
         if (Array.isArray(file)) {
-            const dataArray = file.map(item => item.data);
-            data =  dataArray;
+            let fetchedData =  file.map(item => item.data);
+            return fetchedData
+
         } else {
             throw new Error('JSON response format is incorrect or missing "element" array');
         }
@@ -69,7 +69,6 @@ function createCell(id, content) {
     newCell.id = id;
     newCell.textContent = content;
 
-
     newCell.addEventListener('click', () => {
         applyFlipAndGray(newCell);
     });
@@ -80,8 +79,6 @@ function createCell(id, content) {
 async function loadCells(n){
     try {
         const container = document.getElementById('cell-container');
-        let data = await fetchData();
-        console.log(data)
         let shuffledData = shuffleArray(data);
 
         for (let i = 0; i < n; i++) {
@@ -98,16 +95,49 @@ async function loadCells(n){
     }
 }
 
+function setCookie(name, value) {
+    let v = value;
+    if(Array.isArray(value)){
+        v = JSON.stringify(value);
+    }
+    document.cookie = name + "=" + (v || "") + "; path=/";
+}
+
+function getCookie(name){
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0){
+            let value = c.substring(nameEQ.length, c.length);
+            try{
+                return JSON.parse(value);
+            }catch(e){
+                return value;
+            }
+        }
+    }
+    return null;
+}
+
+// Function to delete a cookie by name
+function eraseCookie(name) {
+    document.cookie = name + '=; Max-Age=0; path=/';
+}
+
 // Stablish the Bingo sheet
 document.addEventListener('DOMContentLoaded', async () => {
-    const date = new Date();
-    date.setFullYear(2025);
-    date.setMonth(6); // Meses son 0-11, por lo que 6 es julio
-    date.setDate(3); // Día del mes
-
-    const expires = "expires=" + date.toUTCString();
-    document.cookie = "username=John Doe; " + expires + "; path=/; ";
-
-    console.log("cookies: " + document.cookie);
+    let all_cookies = document.cookie;
+    eraseCookie("bingoData")
+    if(getCookie('bingoData')==null){
+        data=fetchData();
+        console.log(data)
+        setCookie('bingoData', data);
+    }else{
+        data=getCookie('bingoData')
+    }
+    console.log("cookies: " + all_cookies)
+    await console.log("cookies: " + all_cookies)
     // loadCells(9)
 });
