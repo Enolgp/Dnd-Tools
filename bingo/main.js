@@ -126,18 +126,72 @@ function eraseCookie(name) {
     document.cookie = name + '=; Max-Age=0; path=/';
 }
 
+//create de cookie UI
+function createCookieUI(arr){
+    let currentData = document.getElementById('current-data');
+    for(let i=0; i<arr.length;i++){
+        let cell = createCookieCell(arr[i]);
+        currentData.appendChild(cell);
+    }
+}
+
+function createCookieCell(content){
+    let card = document.createElement('div');
+    card.className = 'card';
+
+    let cardBody = document.createElement('div');
+    cardBody.className = 'card-body d-flex justify-content-between align-items-center';
+    
+    let textContent = document.createElement('div');
+    textContent.textContent = content;
+
+    let deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-button btn btn-danger';
+    deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    
+    cardBody.appendChild(textContent);
+    cardBody.appendChild(deleteButton);
+    card.appendChild(cardBody);
+
+    deleteButton.addEventListener('click', function() {
+        card.remove();
+    });
+
+    return card;
+}
+
+function addCookieCell(txt){
+    if(txt.trim() !== ''){
+        let currentData = document.getElementById('current-data');
+        let cell = createCookieCell(txt);
+        currentData.appendChild(cell)
+    }
+}
+
 // Stablish the Bingo sheet
 document.addEventListener('DOMContentLoaded', async () => {
+    // get the data from cookies
     let all_cookies = document.cookie;
     eraseCookie("bingoData")
     if(getCookie('bingoData')==null){
-        data=fetchData();
-        console.log(data)
+        // if there isnt cookie, fetch it from API
+        data = await fetchData();
         setCookie('bingoData', data);
     }else{
         data=getCookie('bingoData')
     }
+    console.log("data: "+data)
     console.log("cookies: " + all_cookies)
-    await console.log("cookies: " + all_cookies)
-    // loadCells(9)
+
+    document.getElementById('upload-button').addEventListener('click', function() {
+        let cookieInput = document.getElementById('cookie-input');
+        addCookieCell(cookieInput.value);
+        cookieInput.value=''
+    });
+
+    createCookieUI(patata)
+
+    loadCells(9)
 });
+
+// next step: save all the content in cookie cells into the cookies and data
