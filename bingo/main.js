@@ -103,17 +103,21 @@ function setCookie(name, value) {
     document.cookie = name + "=" + (v || "") + "; path=/";
 }
 
-function getCookie(name){
+function getCookie(name) {
     let nameEQ = name + "=";
     let ca = document.cookie.split(';');
     for (let i = 0; i < ca.length; i++) {
         let c = ca[i];
         while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0){
+        if (c.indexOf(nameEQ) == 0) {
             let value = c.substring(nameEQ.length, c.length);
-            try{
-                return JSON.parse(value);
-            }catch(e){
+            try {
+                arr = JSON.parse(value);
+                if(arr.length === 0){
+                    return null
+                }
+                return arr
+            } catch (e) {
                 return value;
             }
         }
@@ -143,6 +147,7 @@ function createCookieCell(content){
     cardBody.className = 'card-body d-flex justify-content-between align-items-center';
     
     let textContent = document.createElement('div');
+    textContent.className = 'text-content';
     textContent.textContent = content;
 
     let deleteButton = document.createElement('button');
@@ -168,11 +173,25 @@ function addCookieCell(txt){
     }
 }
 
+function saveCookieData(){
+    let cardBodies = document.querySelectorAll('#current-data > .card > .card-body > .text-content');
+    let content = [];
+    cardBodies.forEach(textDiv =>{
+        content.push(textDiv.textContent.trim());
+    });
+    console.log("content: ", content)
+    setCookie('bingoData', content);
+}
+
+function uploadButton(){
+    let cookieInput = document.getElementById('cookie-input');
+    addCookieCell(cookieInput.value);
+    cookieInput.value='';
+}
+
 // Stablish the Bingo sheet
 document.addEventListener('DOMContentLoaded', async () => {
     // get the data from cookies
-    let all_cookies = document.cookie;
-    eraseCookie("bingoData")
     if(getCookie('bingoData')==null){
         // if there isnt cookie, fetch it from API
         data = await fetchData();
@@ -180,18 +199,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     }else{
         data=getCookie('bingoData')
     }
-    console.log("data: "+data)
-    console.log("cookies: " + all_cookies)
 
-    document.getElementById('upload-button').addEventListener('click', function() {
-        let cookieInput = document.getElementById('cookie-input');
-        addCookieCell(cookieInput.value);
-        cookieInput.value=''
+    document.getElementById('upload-button').addEventListener('click', uploadButton);
+
+    document.getElementById('cookie-input').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            uploadButton();
+        }
     });
 
-    createCookieUI(patata)
+    document.getElementById('save-cookies').addEventListener('click', function() {
+        uploadButton();
+        saveCookieData();
+        console.log('cookies:')
+        console.log(document.cookie)
+        $('#property-modal').modal('hide');
+        location.reload();
+    });
 
-    loadCells(9)
+    document.getElementById('del-cookies').addEventListener('click', function(){
+        eraseCookie('bingoData');
+        document.getElementById('current-data').innerHTML = '';
+    });
+
+    createCookieUI(data)
+
+    if(data.length < 6){
+        loadCells(3)
+    }else if(data.length >= 6 && data.length < 10){
+        loadCells(6)
+    }else{
+        loadCells(9)
+    }
 });
 
-// next step: save all the content in cookie cells into the cookies and data
+// next step: notification when row and bingo, code comments and git explanation
