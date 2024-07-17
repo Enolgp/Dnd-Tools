@@ -1,4 +1,6 @@
-// Get the data
+var data = []
+
+// URL of the data
 const apiUrl = 'https://my-json-server.typicode.com/enolgp/api/element';
 
 // Fetch the data
@@ -10,17 +12,16 @@ async function fetchData() {
             throw new Error('Network response was not ok ' + response.statusText);
         }
         const file = await response.json();
-        console.log(file)
 
         if (Array.isArray(file)) {
-            const dataArray = file.map(item => item.data);
-            return dataArray;
+            let fetchedData =  file.map(item => item.data);
+            return fetchedData
+
         } else {
             throw new Error('JSON response format is incorrect or missing "element" array');
         }
     } catch (error) {
         console.error('Error fetching the data:', error);
-        return [];
     }
 }
 
@@ -34,12 +35,8 @@ function shuffleArray(array) {
 }
 
 // Change a color into the same but darker
-function rgbToGrayscale(r, g, b) {
-    r = Math.max(r - 120, 0);
-    g = Math.max(g - 120, 0);
-    b = Math.max(b - 120, 0);
-
-    return `rgb(${r}, ${g}, ${b})`;
+function rgbToGrayscale(r, g, b, scale=120) {
+    return `rgb(${r-scale}, ${g-scale}, ${b-scale})`;
 }
 
 // Flip the card and change color
@@ -72,7 +69,6 @@ function createCell(id, content) {
     newCell.id = id;
     newCell.textContent = content;
 
-
     newCell.addEventListener('click', () => {
         applyFlipAndGray(newCell);
     });
@@ -80,15 +76,12 @@ function createCell(id, content) {
     return newCell;
 }
 
-// Stablish the Bingo sheet
-document.addEventListener('DOMContentLoaded', async () => {
+async function loadCells(n){
     try {
         const container = document.getElementById('cell-container');
-        let data = await fetchData();
-        console.log(data)
         let shuffledData = shuffleArray(data);
 
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < n; i++) {
             let cell = createCell(i, shuffledData[i]);
             if (i % 2) {
                 cell.classList.add('c1');
@@ -98,6 +91,146 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.appendChild(cell);
         }
     } catch (error) {
-        console.error('Error setting up Bingo sheet:', error);
+        console.error('Error loading cells:', error);
+    }
+}
+
+function setCookie(name, value) {
+    let v = value;
+    if(Array.isArray(value)){
+        v = JSON.stringify(value);
+    }
+    document.cookie = name + "=" + (v || "") + "; path=/";
+}
+
+function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) {
+            let value = c.substring(nameEQ.length, c.length);
+            try {
+                arr = JSON.parse(value);
+                if(arr.length === 0){
+                    return null
+                }
+                return arr
+            } catch (e) {
+                return value;
+            }
+        }
+    }
+    return null;
+}
+
+// Function to delete a cookie by name
+function eraseCookie(name) {
+    document.cookie = name + '=; Max-Age=0; path=/';
+}
+
+//create de cookie UI
+function createCookieUI(arr){
+    let currentData = document.getElementById('current-data');
+    for(let i=0; i<arr.length;i++){
+        let cell = createCookieCell(arr[i]);
+        currentData.appendChild(cell);
+    }
+}
+
+function createCookieCell(content){
+    let card = document.createElement('div');
+    card.className = 'card';
+
+    let cardBody = document.createElement('div');
+    cardBody.className = 'card-body d-flex justify-content-between align-items-center';
+    
+    let textContent = document.createElement('div');
+    textContent.className = 'text-content';
+    textContent.textContent = content;
+
+    let deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-button btn btn-danger';
+    deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    
+    cardBody.appendChild(textContent);
+    cardBody.appendChild(deleteButton);
+    card.appendChild(cardBody);
+
+    deleteButton.addEventListener('click', function() {
+        card.remove();
+    });
+
+    return card;
+}
+
+function addCookieCell(txt){
+    if(txt.trim() !== ''){
+        let currentData = document.getElementById('current-data');
+        let cell = createCookieCell(txt);
+        currentData.appendChild(cell)
+    }
+}
+
+function saveCookieData(){
+    let cardBodies = document.querySelectorAll('#current-data > .card > .card-body > .text-content');
+    let content = [];
+    cardBodies.forEach(textDiv =>{
+        content.push(textDiv.textContent.trim());
+    });
+    console.log("content: ", content)
+    setCookie('bingoData', content);
+}
+
+function uploadButton(){
+    let cookieInput = document.getElementById('cookie-input');
+    addCookieCell(cookieInput.value);
+    cookieInput.value='';
+}
+
+// Stablish the Bingo sheet
+document.addEventListener('DOMContentLoaded', async () => {
+    // get the data from cookies
+    if(getCookie('bingoData')==null){
+        // if there isnt cookie, fetch it from API
+        data = await fetchData();
+        setCookie('bingoData', data);
+    }else{
+        data=getCookie('bingoData')
+    }
+
+    document.getElementById('upload-button').addEventListener('click', uploadButton);
+
+    document.getElementById('cookie-input').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            uploadButton();
+        }
+    });
+
+    document.getElementById('save-cookies').addEventListener('click', function() {
+        uploadButton();
+        saveCookieData();
+        console.log('cookies:')
+        console.log(document.cookie)
+        $('#property-modal').modal('hide');
+        location.reload();
+    });
+
+    document.getElementById('del-cookies').addEventListener('click', function(){
+        eraseCookie('bingoData');
+        document.getElementById('current-data').innerHTML = '';
+    });
+
+    createCookieUI(data)
+
+    if(data.length < 6){
+        loadCells(3)
+    }else if(data.length >= 6 && data.length < 10){
+        loadCells(6)
+    }else{
+        loadCells(9)
     }
 });
+
+// next step: notification when row and bingo, code comments and git explanation
