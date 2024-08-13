@@ -1,4 +1,5 @@
 var data = []
+var windowWidth = '';
 
 // URL of the data
 const apiUrl = 'https://my-json-server.typicode.com/enolgp/api/element';
@@ -63,9 +64,15 @@ function applyFlipAndGray(cell) {
 }
 
 // Create a new cell with the parameters
-function createCell(id, content) {
+function createCell(id, content, size='s') {
     const newCell = document.createElement('div');
-    newCell.classList.add('col-sm-4', 'border', 'text-center', 'p-5', 'cell');
+    if(size=='s'){
+        newCell.classList.add('col-md-4', 'border', 'text-center', 'p-5', 'cell');
+    }else if(size=='m'){
+        newCell.classList.add('col-md-6', 'border', 'text-center', 'p-5', 'cell');
+    }else{
+        newCell.classList.add('col-md-12', 'border', 'text-center', 'p-5', 'cell');
+    }
     newCell.id = id;
     newCell.textContent = content;
 
@@ -81,19 +88,43 @@ async function loadCells(n){
         const container = document.getElementById('cell-container');
         let shuffledData = shuffleArray(data);
 
+        let size='s';
+        if(n==1){
+            size = 'b';
+        }else if (n==2){
+            size = 'm';
+        }
+
         for (let i = 0; i < n; i++) {
-            let cell = createCell(i, shuffledData[i]);
-            if (i % 2) {
-                cell.classList.add('c1');
-            } else {
-                cell.classList.add('c2');
-            }
+            let cell = createCell(i, shuffledData[i], size);
             container.appendChild(cell);
         }
+
+        setCellColor();
+
     } catch (error) {
         console.error('Error loading cells:', error);
     }
 }
+
+function setCellColor(){
+    cells=document.getElementsByClassName('cell');
+    for(let i = 0; i < cells.length; i++){
+        // remove cells[i] class c1 or c2
+        cells[i].classList.remove('c1', 'c2');
+        if (windowWidth == 'sm'){
+            if(i >= 3 && i < 6) cells[i].classList.add('c1');
+            else cells[i].classList.add('c2');
+        }else if (windowWidth == 'md'){
+            if (i % 2) {
+                cells[i].classList.add('c1');
+            } else {
+                cells[i].classList.add('c2');
+            }
+        }
+    }
+}
+
 
 function setCookie(name, value) {
     let v = value;
@@ -191,6 +222,10 @@ function uploadButton(){
 
 // Stablish the Bingo sheet
 document.addEventListener('DOMContentLoaded', async () => {
+    //set the window with variable
+    if(window.innerWidth < 756) windowWidth='sm'
+    else windowWidth = 'md'
+
     // get the data from cookies
     if(getCookie('bingoData')==null){
         // if there isnt cookie, fetch it from API
@@ -224,13 +259,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     createCookieUI(data)
 
-    if(data.length < 6){
+    if (data.length < 3){
+        loadCells(data.length)
+    }else if(data.length >= 3 && data.length < 6){
         loadCells(3)
-    }else if(data.length >= 6 && data.length < 10){
+    }else if(data.length >= 6 && data.length < 9){
         loadCells(6)
     }else{
         loadCells(9)
     }
 });
+
+window.addEventListener('resize', function(event) {
+    if(this.window.innerWidth <= 768 && windowWidth == 'md'){
+        windowWidth = 'sm';
+        setCellColor();
+    }else if(this.window.innerWidth > 768 && windowWidth == 'sm'){
+        windowWidth = 'md';
+        setCellColor();
+    }
+}, true);
 
 // next step: notification when row and bingo, code comments and git explanation
