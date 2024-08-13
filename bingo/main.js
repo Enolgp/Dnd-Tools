@@ -1,8 +1,8 @@
 var data = []
 var windowWidth = '';
 var line = false;
-var lineSound = new Audio('./sounds/line-fanfare.mp3');
-var bingoSound = new Audio('./sounds/bingo-fanfare.mp3');
+var lineSound = new Audio('/Dnd-Tools/bingo/sounds/line-fanfare.mp3');
+var bingoSound = new Audio('/Dnd-Tools/bingo/sounds/bingo-fanfare.mp3');
 
 // URL of the data
 const apiUrl = 'https://my-json-server.typicode.com/enolgp/api/element';
