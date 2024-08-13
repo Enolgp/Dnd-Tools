@@ -1,5 +1,8 @@
 var data = []
 var windowWidth = '';
+var line = false;
+var lineSound = new Audio('/bingo/sounds/line-fanfare.mp3');
+var bingoSound = new Audio('/bingo/sounds/bingo-fanfare.mp3');
 
 // URL of the data
 const apiUrl = 'https://my-json-server.typicode.com/enolgp/api/element';
@@ -60,7 +63,6 @@ function applyFlipAndGray(cell) {
             }, 10); 
         }, 300); 
     }
-    cell.classList.remove("cell");
 }
 
 // Create a new cell with the parameters
@@ -78,9 +80,44 @@ function createCell(id, content, size='s') {
 
     newCell.addEventListener('click', () => {
         applyFlipAndGray(newCell);
+        checkBingo();
     });
 
     return newCell;
+}
+
+function checkBingo(){
+    let cells=Array.from(document.getElementsByClassName('cell'));
+    let results = [];
+    
+    cells.forEach(function(cell){
+        if(cell.classList.contains('flipped')) results.push(1);
+        else results.push(0);
+    })
+    
+    //check if the bingo has occured
+    if(!results.includes(0)) showResultConten('Acabas de cantar bingo');
+
+    //check if a line has occured if not happend before
+    if(!line){
+        let group1 = results[0] == results[1] && results[1] == results[2] && results[0] == 1;
+        let group2 = results[3] == results[4] && results[4] == results[5] && results[3] == 1;
+        let group3 = results[6] == results[7] && results[7] == results[8] && results[6] == 1;
+
+        if (group1 || group2 || group3){
+            showResultConten('Acabas de cantar línea');
+            line = true;
+        }
+    }
+}
+
+function showResultConten(text){
+    document.getElementById('modal-notification').innerText = text;
+    // $('#modal-notification').textContent = text;
+    $('#notification-modal').modal('toggle');
+
+    if(!line) lineSound.play();
+    else bingoSound.play();
 }
 
 async function loadCells(n){
@@ -108,7 +145,7 @@ async function loadCells(n){
 }
 
 function setCellColor(){
-    cells=document.getElementsByClassName('cell');
+    let cells=document.getElementsByClassName('cell');
     for(let i = 0; i < cells.length; i++){
         // remove cells[i] class c1 or c2
         cells[i].classList.remove('c1', 'c2');
@@ -210,7 +247,6 @@ function saveCookieData(){
     cardBodies.forEach(textDiv =>{
         content.push(textDiv.textContent.trim());
     });
-    console.log("content: ", content)
     setCookie('bingoData', content);
 }
 
@@ -246,8 +282,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('save-cookies').addEventListener('click', function() {
         uploadButton();
         saveCookieData();
-        console.log('cookies:')
-        console.log(document.cookie)
         $('#property-modal').modal('hide');
         location.reload();
     });
@@ -281,3 +315,5 @@ window.addEventListener('resize', function(event) {
 }, true);
 
 // next step: notification when row and bingo, code comments and git explanation
+
+// $('#notification-modal').modal('toggle')
