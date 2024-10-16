@@ -413,10 +413,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         num_data = data.length;
     }
 
-    if(getCookie('BingoValues')==null) {
+    if(getCookie('BingoValues')==null)
         bingoValues=Array(num_data).fill(0);
-        console.log('patata')
-    }
     else bingoValues=getCookie('BingoValues');
 
     // get the line state
