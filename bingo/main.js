@@ -1,6 +1,7 @@
-var data = []
+var data = [];
 var windowWidth = '';
 var line = false;
+var bingoValues = [];
 var lineSound = new Audio('/Dnd-Tools/bingo/sounds/line-fanfare.mp3');
 var bingoSound = new Audio('/Dnd-Tools/bingo/sounds/bingo-fanfare.mp3');
 
@@ -65,14 +66,8 @@ function applyFlipAndGray(cell) {
 
         // add a delay to change the color
         setTimeout(() => {
-            // get the cell data
-            const style = window.getComputedStyle(cell);
-            const bgColor = style.backgroundColor;
-            const [r, g, b] = bgColor.match(/\d+/g).map(Number);
-            // change the background to darker and the text to white
-            cell.style.backgroundColor = rgbToDarker(r, g, b);
-            cell.classList.add('text-white');
-
+            //turn gray the cell
+            applyGray(cell);
             // flip the cell again to the begining after a short delay
             setTimeout(() => {
                 cell.classList.remove('flip-forward');
@@ -83,10 +78,28 @@ function applyFlipAndGray(cell) {
     cell.classList.remove("cell")
 }
 
+//Function to change the cell to darker
+function applyGray(cell){
+    // get the cell data
+    const style = window.getComputedStyle(cell);
+    const bgColor = style.backgroundColor;
+    const [r, g, b] = bgColor.match(/\d+/g).map(Number);
+    // change the background to darker and the text to white
+    cell.style.backgroundColor = rgbToDarker(r, g, b);
+    cell.classList.add('text-white');
+}
+
+// change the color to the cell passed by parameter and remove the class 'cell'
+function flipped(cell){
+    applyGray(cell);
+    cell.classList.remove('cell');
+}
+
 // Create a new cell with id and content passed in the parameters.
+// Aditionally you can give the state of the cell to add flipped to class list on 1 or not if state is not 1
 // Aditionally you can change the size of the cell
 // Return the cell element
-function createCell(id, content, size='s') {
+function createCell(id, content, state=0, size='s') {
     const newCell = document.createElement('div');
     //change the side of the cell based on the number of cells
     if(size=='s'){
@@ -96,14 +109,18 @@ function createCell(id, content, size='s') {
     }else{
         newCell.classList.add('col-md-12', 'border', 'text-center', 'p-5', 'cell');
     }
+    // add class fipped if state is 1
+    if(state==1) newCell.classList.add('flipped');
+
+    
     newCell.id = id;
     newCell.textContent = content;
 
     // Add the event to flip the cell and check if the bingo happens
     newCell.addEventListener('click', () => {
         applyFlipAndGray(newCell);
-        checkBingo();
         setCookie('BingoValues', mapBingo());
+        checkBingo();
     });
 
     return newCell;
@@ -134,6 +151,7 @@ function checkBingo(){
 
     //check if a line has occured if not happend before
     if(!line){
+        // create groups as subarrays of results
         let group1 = results.slice(0,3).includes(0);
         let group2 = results.slice(3,6).includes(0);
         let group3 = results.slice(6,9).includes(0);
@@ -143,6 +161,7 @@ function checkBingo(){
             showResultConten('Acabas de cantar línea');
             // change the global variable of the line happend
             line = true;
+            setCookie('line', true);
         }
     }
 }
@@ -175,7 +194,7 @@ async function loadCells(n){
 
         // create all the cells giving them an id, a content and the size
         for (let i = 0; i < n; i++) {
-            let cell = createCell(i, data[i], size);
+            let cell = createCell(i, data[i], bingoValues[i],size);
             container.appendChild(cell);
         }
         // set the color of all cells
@@ -185,6 +204,14 @@ async function loadCells(n){
         // throw an error by console if anythong happens
         console.error('Error loading cells:', error);
     }
+}
+
+// Look for all the cells with the 'flipped' class and flip them
+function flipMarkedCells(){
+    let cell_container = document.getElementById('cell-container');
+    Array.from(cell_container.children).forEach(function(cell){
+        if(cell.classList.contains('flipped')) flipped(cell);
+    })
 }
 
 // give the cells the class c1 or c2 which determine the color of the cell
@@ -370,6 +397,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         num_data = data.length;
     }
 
+    if(getCookie('BingoValues')==null) {
+        bingoValues=Array(num_data).fill(0);
+        console.log('patata')
+    }
+    else bingoValues=getCookie('BingoValues');
+
+    // get the line state
+    if(getCookie('line')!=null) line = getCookie('line');
+
     // add the upload button functionality
     document.getElementById('upload-button').addEventListener('click', uploadButton);
     
@@ -394,7 +430,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('del-cookies').addEventListener('click', function(){
         // deletes the cookie and empties the Cookie UI
         eraseCookie('bingoData');
-        document.getElementById('current-data').innerHTML = '';
+        document.getElementById('current-data').text = '';
+    });
+
+    // add the new bingo button functionality
+    document.getElementById('new-bingo').addEventListener('click', function(){
+        // empty the cell container
+        document.getElementById('cell-container').innerHTML='';
+        //set data as a new shuffled subarray with num_data elements
+        data = shuffleArray(fullData).slice(0, num_data);
+        //set the currentData cookie with the data seted previously
+        setCookie('currentData', data);
+        //Erase the cookie 'BingoValues' and reset bingoValues variable
+        eraseCookie('BingoValues');
+        bingoValues=Array(num_data).fill(0);
+        //Erase the line cookie and change the variable
+        eraseCookie('line');
+        line=false;
+        //load the new cells
+        loadCells(num_data);
     });
 
     // Create the cookie UI with the data
@@ -402,6 +456,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Loads different number of cells based on the number of data
     loadCells(num_data);
+    // Flip cells with flipped class
+    flipMarkedCells();
 });
 
 // add event to change the cells color ant the value of the windowWith variable when the window is resized
