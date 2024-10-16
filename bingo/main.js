@@ -77,9 +77,10 @@ function applyFlipAndGray(cell) {
             setTimeout(() => {
                 cell.classList.remove('flip-forward');
                 cell.classList.add('flip-backward');
-            }, 10); 
+            }, 10);
         }, 300); 
     }
+    cell.classList.remove("cell")
 }
 
 // Create a new cell with id and content passed in the parameters.
@@ -102,33 +103,42 @@ function createCell(id, content, size='s') {
     newCell.addEventListener('click', () => {
         applyFlipAndGray(newCell);
         checkBingo();
+        setCookie('BingoValues', mapBingo());
     });
 
     return newCell;
 }
 
-// function to check if a line or a bingo has happend
-function checkBingo(){
-    // get the cells as an array
-    let cells=Array.from(document.getElementsByClassName('cell'));
+// function to map the bingo
+// return an unidimensional array of binary values where 0 means cells its not flipped and 1 means it is
+function mapBingo(){
+    // get the cell container
+    let cell_container=document.getElementById('cell-container');
     let results = [];
     
     // map the cells as 1 if it has flipped or 0 if it hasn't
-    cells.forEach(function(cell){
+    Array.from(cell_container.children).forEach(function(cell){
         if(cell.classList.contains('flipped')) results.push(1);
         else results.push(0);
     })
-    
+    return results;
+}
+
+// function to check if a line or a bingo has happend
+function checkBingo(){
+    //map the bingo values
+    let results = mapBingo();
+
     //check if the bingo has occured and show the modal if it has
     if(!results.includes(0)) showResultConten('Acabas de cantar bingo');
 
     //check if a line has occured if not happend before
     if(!line){
-        let group1 = results[0] == results[1] && results[1] == results[2] && results[0] == 1;
-        let group2 = results[3] == results[4] && results[4] == results[5] && results[3] == 1;
-        let group3 = results[6] == results[7] && results[7] == results[8] && results[6] == 1;
+        let group1 = results.slice(0,3).includes(0);
+        let group2 = results.slice(3,6).includes(0);
+        let group3 = results.slice(6,9).includes(0);
 
-        if (group1 || group2 || group3){
+        if (!group1 || !group2 || !group3){
             // show the modal
             showResultConten('Acabas de cantar línea');
             // change the global variable of the line happend
@@ -144,7 +154,7 @@ function showResultConten(text){
     // shows the moddal
     $('#notification-modal').modal('toggle');
 
-    // play different sound depending of what happend
+    // play different sound depending of the value of line
     if(!line) lineSound.play();
     else bingoSound.play();
 }
@@ -154,8 +164,6 @@ async function loadCells(n){
     try {
         // Get the container of the cells
         const container = document.getElementById('cell-container');
-        // Shuffle the data for the bingo
-        let shuffledData = shuffleArray(data);
 
         // set the size of the cell based on the number of them
         let size='s';
@@ -167,7 +175,7 @@ async function loadCells(n){
 
         // create all the cells giving them an id, a content and the size
         for (let i = 0; i < n; i++) {
-            let cell = createCell(i, shuffledData[i], size);
+            let cell = createCell(i, data[i], size);
             container.appendChild(cell);
         }
         // set the color of all cells
@@ -329,17 +337,37 @@ function uploadButton(){
 // Launch of the app with the load of the DOM
 document.addEventListener('DOMContentLoaded', async () => {
     //set the window with variable
-    if(window.innerWidth < 756) windowWidth='sm'
-    else windowWidth = 'md'
+    if(window.innerWidth < 756) windowWidth='sm';
+    else windowWidth = 'md';
 
     // get the data
     if(getCookie('bingoData')==null){
         // if there isn't cookie, fetch it from API and save it in the cookie
-        data = await fetchData();
-        setCookie('bingoData', data);
+        fullData = await fetchData();
+        setCookie('bingoData', fullData);
     }else{
         // if there is cookie, get the data from it
-        data=getCookie('bingoData')
+        fullData=getCookie('bingoData');
+    }
+    
+    if(getCookie('currentData')==null){
+        // Set the number of data num_data
+        if(fullData.length<3)
+            num_data=fullData.length;
+        else if(fullData.length<6)
+            num_data=3;
+        else if(fullData.length<9)
+            num_data=6
+        else
+            num_data=9
+
+        //set data as a shuffled subarray with num_data elements
+        data = shuffleArray(fullData).slice(0, num_data);
+        //set the currentData cookie with the data seted previously
+        setCookie('currentData', data);
+    }else{
+        data = getCookie('currentData');
+        num_data = data.length;
     }
 
     // add the upload button functionality
@@ -370,18 +398,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Create the cookie UI with the data
-    createCookieUI(data)
+    createCookieUI(fullData)
 
     // Loads different number of cells based on the number of data
-    if (data.length < 3){
-        loadCells(data.length)
-    }else if(data.length >= 3 && data.length < 6){
-        loadCells(3)
-    }else if(data.length >= 6 && data.length < 9){
-        loadCells(6)
-    }else{
-        loadCells(9)
-    }
+    loadCells(num_data);
 });
 
 // add event to change the cells color ant the value of the windowWith variable when the window is resized
