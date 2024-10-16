@@ -153,8 +153,11 @@ function checkBingo(){
     if(!line){
         // create groups as subarrays of results
         let group1 = results.slice(0,3).includes(0);
+        console.log('group1:'+group1)
         let group2 = results.slice(3,6).includes(0);
+        console.log('group2:'+group2)
         let group3 = results.slice(6,9).includes(0);
+        console.log('group3:'+group3)
 
         if (!group1 || !group2 || !group3){
             // show the modal
@@ -191,6 +194,7 @@ async function loadCells(n){
         }else if (n==2){
             size = 'm';
         }
+        n=num_data;
 
         // create all the cells giving them an id, a content and the size
         for (let i = 0; i < n; i++) {
@@ -361,6 +365,26 @@ function uploadButton(){
     cookieInput.value='';
 }
 
+function setNumData(){
+    // Set the number of data num_data based on the fullData length
+    let n=0;
+    if(fullData.length<3)
+        n = fullData.length;
+    else if(fullData.length<6)
+        n = 3;
+    else if(fullData.length<9)
+        n = 6;
+    else
+        n = 9;
+
+    // set line as true if there are less than 3 lines
+    if(n!=9){
+        line = true;
+        setCookie('line', true);
+    }
+    return n;
+}
+
 // Launch of the app with the load of the DOM
 document.addEventListener('DOMContentLoaded', async () => {
     //set the window with variable
@@ -378,15 +402,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     if(getCookie('currentData')==null){
-        // Set the number of data num_data
-        if(fullData.length<3)
-            num_data=fullData.length;
-        else if(fullData.length<6)
-            num_data=3;
-        else if(fullData.length<9)
-            num_data=6
-        else
-            num_data=9
+        num_data=setNumData();
 
         //set data as a shuffled subarray with num_data elements
         data = shuffleArray(fullData).slice(0, num_data);
@@ -415,26 +431,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             uploadButton();
         }
     });
-    
-    // add the save changes button functionality
-    document.getElementById('save-cookies').addEventListener('click', function() {
-        // save all the cookies, even the one which is written in the input
-        uploadButton();
-        saveCookieData();
-        // hide the modal of properties and reload the page
-        $('#property-modal').modal('hide');
-        location.reload();
-    });
 
-    // add the delete cookies button functionality
-    document.getElementById('del-cookies').addEventListener('click', function(){
-        // deletes the cookie and empties the Cookie UI
-        eraseCookie('bingoData');
-        document.getElementById('current-data').text = '';
-    });
-
-    // add the new bingo button functionality
-    document.getElementById('new-bingo').addEventListener('click', function(){
+    // creates a new bingo sheet
+    function newBingo(){
         // empty the cell container
         document.getElementById('cell-container').innerHTML='';
         //set data as a new shuffled subarray with num_data elements
@@ -449,6 +448,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         line=false;
         //load the new cells
         loadCells(num_data);
+        num_data=setNumData();
+    }
+    
+    // add the save changes button functionality
+    document.getElementById('save-cookies').addEventListener('click', function() {
+        // save all the cookies, even the one which is written in the input
+        uploadButton();
+        saveCookieData();
+        // hide the modal of properties and reload the page
+        $('#property-modal').modal('hide');
+        newBingo();
+        eraseCookie('currentData');
+        location.reload();
+    });
+
+     // add the delete cookies button functionality
+     document.getElementById('del-cookies').addEventListener('click', function(){
+        // deletes the cookie and empties the Cookie UI
+        eraseCookie('bingoData');
+        document.getElementById('current-data').innerHTML = '';
+    });
+
+    // add the new bingo button functionality
+    document.getElementById('new-bingo').addEventListener('click', function(){
+        newBingo();
     });
 
     // Create the cookie UI with the data
